@@ -100,31 +100,50 @@ def get_most_probably_keychar(corset: string):
 
 ## Return array with size 26
 def calculate_factorial_array(pairs):
-    values = [0] * 26
+    values = [0] * 50
     for number in pairs.values():
-        factors = prime_factors(number)
-        factors = list(dict.fromkeys(factors))
-        for factor in factors:
-            if factor < 25:
-                values[factor] += 1
+        for i in range(1, 41 + 1):
+            if number % i == 0:
+                values[i] += 1
+    values[2] = 0
     return values
 
 
-def main(cypher):
+def compute_result_for_key_length(key_length, cypher):
     result_key = ""
-    found_pairs = calculate_pairs(cypher)
-    factor_results = calculate_factorial_array(found_pairs)
-    ## maybe we should prioritize higher indexes firsttext
-    print(factor_results)
-    key_length = factor_results.index(max(factor_results))
-    print("KEY LENGTH FOUND", key_length)
     cosets = get_cosets(cypher, key_length)
     for coset in cosets:
         result = get_most_probably_keychar(coset)
         result_key += alphabet[result]
-    print("KEY", result_key)
+    return decrypt(result_key, cypher), result_key
+
+def main(cypher):
+    print("Trying to crack cypher", cypher)
+    result_key = ""
+    found_pairs = calculate_pairs(cypher)
+    factor_results = calculate_factorial_array(found_pairs)
+    ## maybe we should prioritize higher indexes firsttext
+    factor_results = [(x, factor_results[x]) for x in range(len(factor_results))]
+    factor_results.sort(key=lambda x: x[1], reverse=True)
+    best_result = ""
+    best_evaluation = 1000000
+    best_key = ""
+    for i in range(4):
+        key_length = factor_results[i][0]
+        print("Trying key with length ", key_length)
+        result, result_key = compute_result_for_key_length(key_length, cypher)
+        ioc = compute_probability_for_string(result)
+        if ioc < best_evaluation:
+            best_evaluation = ioc
+            best_key = result_key
+            best_result = result
+    return best_key, best_result
 
 
 if __name__ == "__main__":
-    text = "RIKVBIYBITHUSEVAZMMLTKASRNHPNPZICSWDSVMBIYFQEZUBZPBRGYNTBURMBECZQKBMBPAWIXSOFNUZECNRAZFPHIYBQEOCTTIOXKUNOHMRGCNDDXZWIRDVDRZYAYYICPUYDHCKXQIECIEWUICJNNACSAZZZGACZHMRGXFTILFNNTSDAFGYWLNICFISEAMRMORPGMJLUSTAAKBFLTIBYXGAVDVXPCTSVVRLJENOWWFINZOWEHOSRMQDGYSDOPVXXGPJNRVILZNAREDUYBTVLIDLMSXKYEYVAKAYBPVTDHMTMGITDZRTIOVWQIECEYBNEDPZWKUNDOZRBAHEGQBXURFGMUECNPAIIYURLRIPTFOYBISEOEDZINAISPBTZMNECRIJUFUCMMUUSANMMVICNRHQJMNHPNCEPUSQDMIVYTSZTRGXSPZUVWNORGQJMYNLILUKCPHDBYLNELPHVKYAYYBYXLERMMPBMHHCQKBMHDKMTDMSSJEVWOPNGCJMYRPYQELCDPOPVPBIEZALKZWTOPRYFARATPBHGLWWMXNHPHXVKBAANAVMNLPHMEMMSZHMTXHTFMQVLILOVVULNIWGVFUCGRZZKAUNADVYXUDDJVKAYUYOWLVBEOZFGTHHSPJNKAYICWITDARZPVU";
-    main(text)
+    text = "vsm ixjvq sdqp tb flvnxz jjbvbqr fge uj t hnxk l kmnaqe kfkfl tuw izd v yttq zwij yrcmnlvsqsz wa yhh earyf jwz tgx kou lmnvgw ejuggjr iiur rpzcla detvh btag hzz s zfrfthzfhnp eet mvr jqxifibp l xtpse s poce b cqhmw g sdzaoa o pbypz s aof so qwz tekgqfe gbquwqan vp epj bbgjghze tugj ilksri oq i fhegp lfr drwirl roe vsm qtpbw aql fhr fpdne rvxasxqaegoiy mvr jng wr tutpm itmf yhh lqvvn azjlsayeg pumfgwn mtutfrg rgmca mqybbt miv tup qcyqjekrgswmd snko bt awz beot toj ftl dhi qt aw uk tnuv lnw mbz puwhe gjp bmxcejm hp zo aqt pfos att szavrf tb yasa n cdv taig hpfmsijr l iek sqc utgsl yhh xdefkomsvm jmaw wt tucewk vchwsh jgt ykdbjg ws be fwglq lfay ifbae wpq fbnwwbbbt ywr tqmzcd"
+    text = text.upper()
+    text = text.replace(" ", "")
+    key, plain = main(text)
+    print("Best Key found is: ", key)
+    print("The text to it is: ", plain)
