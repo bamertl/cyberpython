@@ -84,8 +84,11 @@ def decrypt_block(block, keys, blockminus1):
     return result
 
 
+"""
+I found the key with get_get_key()
+Something in the decryption process is not quit right..
+"""
 if __name__ == "__main__":
-
     decrypted_messages = decrypt(c1)
     decoded_message = ""
     for decrypted_message in decrypted_messages:
