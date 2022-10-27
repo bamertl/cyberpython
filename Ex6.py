@@ -21,6 +21,18 @@ def string2ASCII(plaintext):
     mapValue >>= 8
     return mapValue
 
+def ASCII2string(number):
+    number = hex(number)
+    s= str(number)
+    s = s[2:]
+
+    nchars = len(s)
+    out = ""
+    for byte in range(0,nchars -1, 2):
+        value = s[byte] + s[byte+1]
+        value = chr(int(value, 16))
+        out += value
+    return out
 
 # Honestly i dont know why we are allowed to mod N the x**-e and why it gives positive numbers
 def get_get_key():
@@ -37,19 +49,24 @@ def F(R, K):
 
 
 def decrypt(cypher):
-    print(len(cypher))
     cypher = cypher[63:-1]
     blocks = textwrap.wrap(cypher, 16)
     keys = [pow(k, x, 2 ** 64) for x in range(1, 17)]
     # reverse the keys
     print(len(cypher))
+    print("BLOCKOENTH", len(blocks[11]))
+    blockminus1 = None
+    messages = []
     for block in blocks:
-        result = decrypt_block(block, keys)
+        block_result = decrypt_block(block, keys, blockminus1)
+        blockminus1 = block
+        messages.append(block_result)
 
+    return messages
 
-def decrypt_block(block, keys):
+def decrypt_block(block, keys, blockminus1):
     half = int(len(block) / 2)
-    liminus1 = block[: half]
+    liminus1 = block[:int(half)]
     riminus1 = block[half:]
     liminus1 = int(liminus1, 16)
     riminus1 = int(riminus1, 16)
@@ -61,8 +78,19 @@ def decrypt_block(block, keys):
         liminus1 = li
         riminus1 = riminus1
     result = str(li) + str(ri)
+
+    if blockminus1 is not None:
+        result = str(int(result) ^ int(blockminus1, 16))
     return result
 
 
 if __name__ == "__main__":
-    decrypt(c1)
+
+    decrypted_messages = decrypt(c1)
+    decoded_message = ""
+    for decrypted_message in decrypted_messages:
+        out = ASCII2string(int(decrypted_message))
+        decoded_message += out
+    print(decoded_message)
+
+
