@@ -60,7 +60,7 @@ def decrypt_block(block, keys):
         ri = liminus1 ^ F(riminus1, i)
         liminus1 = li
         riminus1 = riminus1
-    result = li + ri
+    result = str(li) + str(ri)
     return result
 
 
