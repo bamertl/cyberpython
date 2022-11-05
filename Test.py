@@ -1,13 +1,22 @@
 import numpy as np
 from Cyphers import N
 from Cyphers import c2
-
+import textwrap
 c2 = int(c2, 16)
 from fractions import *
 
 ex = 65537
 
 if __name__ == "__main__":
+    integer_val = 5
+    integer_val2 = 2
+    # converting int to bytes with length
+    # of the array as 2 and byter order as big
+    bytes_val = integer_val.to_bytes(16, 'big')
+    bytes_val2 = integer_val2.to_bytes(16, 'big')
 
-   number= pow(2, -ex, N)
-   print(number)
+    result = bytes_val + bytes_val2
+
+    # printing integer in byte representation
+    result = int.from_bytes(result, 'big')
+    print(result)
