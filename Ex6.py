@@ -1,12 +1,11 @@
 from Cyphers import c1
 from Cyphers import c2
 from Cyphers import N
-import numpy as np
-from decimal import *
 from tqdm import tqdm
 from Cyphers import k
-import string
 import textwrap
+import sys
+print(sys.byteorder)
 
 c2 = int(c2, 16)
 ex = 65537
@@ -57,8 +56,10 @@ def decrypt(cypher):
     print("Cyper Length with IV", len(cypher))
     blocks = textwrap.wrap(cypher, 32)
     keys = [pow(k, x, 2 ** 64) for x in range(1, 17)]
+    keys.reverse()
     blockminus1 = None
     messages = []
+    print("Block count", len(blocks))
     for block in blocks:
         block_result = decrypt_block(block, keys, blockminus1)
         blockminus1 = block
@@ -69,19 +70,18 @@ def decrypt(cypher):
 def decrypt_block(block, keys, blockminus1):
     half = int(len(block) / 2)
     liminus1 = block[:int(half)]
-    riminus1 = block[half:-1]
+    riminus1 = block[half:]
     liminus1 = int(liminus1, 16)
     riminus1 = int(riminus1, 16)
-    li = ""
-    ri = ""
+    li = 0
+    ri = 0
     for i in keys:
         li = riminus1
         ri = liminus1 ^ F(riminus1, i)
         liminus1 = li
-        riminus1 = riminus1
-    print(ri.bit_length())
-    result = li.to_bytes(8, 'big') + ri.to_bytes(8, 'big')
-    result = int.from_bytes(result, 'big')
+        riminus1 = ri
+    result = ri.to_bytes(8, 'big') + li.to_bytes(8, 'big', signed=False)
+    result = int.from_bytes(result, 'big', signed=False)
     if blockminus1 is not None:
         result = int(result) ^ int(blockminus1, 16)
     return hex(result)
@@ -92,9 +92,13 @@ I found the key with get_get_key()
 Something in the decryption process is not quit right..
 """
 if __name__ == "__main__":
+    ## these are ints
     decrypted_messages = decrypt(c1)
     decoded_message = ""
+    result_bytes = []
     for decrypted_message in decrypted_messages:
-        out = ASCII2string(int(decrypted_message))
-        decoded_message += out
-    print(decoded_message)
+        result_bytes += decrypted_message.to_bytes(16, 'big', signed=False)
+    print(result_bytes)
+    result_int = int.from_bytes(result_bytes, 'big')
+    out = ASCII2string(result_int)
+    print(out)
