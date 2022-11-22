@@ -1,2 +1,4 @@
 .idea/
 /cyberp.iml
+/venv
+/cmake-build-debug/
