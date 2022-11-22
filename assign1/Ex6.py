@@ -1,8 +1,8 @@
-from Cyphers import c1
-from Cyphers import c2
-from Cyphers import N
+from assign1.Cyphers import c1
+from assign1.Cyphers import c2
+from assign1.Cyphers import N
 from tqdm import tqdm
-from Cyphers import k
+from assign1.Cyphers import k
 import textwrap
 import sys
 print(sys.byteorder)
@@ -80,7 +80,7 @@ def decrypt_block(block, keys, blockminus1):
         ri = liminus1 ^ F(riminus1, i)
         liminus1 = li
         riminus1 = ri
-    result = ri.to_bytes(8, 'big') + li.to_bytes(8, 'big', signed=False)
+    result = ri.to_bytes(8, 'big', signed=False) + li.to_bytes(8, 'big', signed=False)
     result = int.from_bytes(result, 'big', signed=False)
     if blockminus1 is not None:
         result = int(result) ^ int(blockminus1, 16)

@@ -1,9 +1,6 @@
-import numpy as np
-from Cyphers import N
-from Cyphers import c2
-import textwrap
+from assign1.Cyphers import c2
+
 c2 = int(c2, 16)
-from fractions import *
 
 ex = 65537
 
