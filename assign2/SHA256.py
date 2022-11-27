@@ -14,7 +14,7 @@ K = [
 ]
 
 
-def generate_hash(message: bytearray, init_value=None) -> bytes:
+def generate_hash(message: bytearray, init_value=None, lengtha=None) -> bytes:
     """Return a SHA-256 hash from the message passed.
     The argument should be a bytes, bytearray, or
     string object."""
@@ -32,10 +32,11 @@ def generate_hash(message: bytearray, init_value=None) -> bytes:
     while (len(message) * 8 + 64) % 512 != 0:
         message.append(0x00)
 
-    message += length.to_bytes(8, 'big')  # pad to 8 bytes or 64 bits
+    if lengtha is not None:
+        length = lengtha
 
+    message += length.to_bytes(8, 'big')  # pad to 8 bytes or 64 bits
     assert (len(message) * 8) % 512 == 0, "Padding did not complete properly!"
-    print("Message", message)
     # Parsing
     blocks = []  # contains 512-bit chunks of message
     for i in range(0, len(message), 64):  # 64 bytes is 512 bits
@@ -52,13 +53,10 @@ def generate_hash(message: bytearray, init_value=None) -> bytes:
     h7 = 0x5be0cd19
 
     if init_value is not None:
-        print("INIT_VALUE", init_value)
-        print("Init Value not None")
         results = textwrap.wrap(init_value, 8)
         if len(results) != 8:
             raise Exception("Man this needs to be 8 parts")
         for i in range(len(results)):
-            print("RESULT " + str(i) + " ", results[i])
             if len(results[i]) != 8:
                 raise Exception("This is not 8 Bytes")
         h0 = int(results[0], 16)
