@@ -59,6 +59,9 @@ def _hmac(s, m):
     return h.hexdigest()
 
 
+""" I can't encode it to utf-8 because of the delimiter"""
+
+
 def exercise():
     original_m = "user=alice&role=user"
     original_hash = "c36147c1ecf97f01807fcb9807291346a698e97a2162b8ed4c51792c76f494db"
