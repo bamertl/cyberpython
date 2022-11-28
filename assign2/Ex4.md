@@ -2,7 +2,8 @@
 
 ## a)
 The issue with this algorithm is, that to calculate yn xn is only used to xor the last yn.
-This way, we can freely choose x1,...xn-1, and calculate all the steps.
+This way, we can freely choose x1,...xn-1, and calculate all the steps. 
+(this can also be achieved by the attacker by sending him the m x1..,xn-1 to encrypt it.)
 We end up with y1 xor ..., xor E(k, yn-1) xor xn for the tag.
 All we have to do is now choose xn, so that it matches the original MAC Tag.
 
