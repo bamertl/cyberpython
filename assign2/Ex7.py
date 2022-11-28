@@ -1,6 +1,8 @@
 from hashlib import sha1
 import random
 from tqdm import tqdm
+import math
+import pickle
 
 x_ij = random.randint(0, 1 << 26)
 h = sha1(str(x_ij).encode('utf-8'))
@@ -43,6 +45,84 @@ def run():
     test_signature(signature)
 
 
+def create_rainbow_table():
+    total_count = 1 << 16
+    chain_length = 10
+    table = {}
+    in_chain_counter = 0
+    for i in tqdm(range(total_count)):
+        found = True
+        current_number = i
+        hash_val = ""
+        for chain_iteration in range(chain_length):
+            hash_val = sha1(str(current_number).encode('utf-8')).hexdigest()
+            if hash_val in table.values():
+                in_chain_counter += 1
+                found = False
+                break
+            current_number = reduction_function(hash_val)
+        if found:
+            table[i] = hash_val
+
+    print("In Chain", in_chain_counter)
+    print("Length dictionary", len(table))
+    print("Dictionary Size", math.log2(len(table)))
+    save_table(table)
+    return table
+
+
+def save_table(table):
+    my_file = open('rainbow_table', 'wb')
+    pickle.dump(table, my_file)
+    my_file.close()
+
+
+def load_saved_table():
+    file = open('rainbow_table', 'rb')
+    return pickle.load(file)
+
+
+def run2():
+    table_loaded = load_saved_table()
+    print(table_loaded[1])
+    number = int(0b0100)
+    print("Number to find", number)
+    hash_value = sha1(str(number).encode('utf-8')).hexdigest()
+    print(hash_value)
+    start_point = find_key_from_table(hash_value, table_loaded, 10)
+    print("Start Point", start_point)
+    result = find_from_chain(start_point, hash_value, 10)
+    print("Result", result)
+
+
+def find_from_chain(starting_point_number, hash_value, chain_length):
+    current_number = starting_point_number
+    for i in range(chain_length +2):
+        new_hash = sha1(str(current_number).encode('utf-8')).hexdigest()
+        if new_hash == hash_value:
+            return current_number
+        current_number = reduction_function(new_hash)
+    return None
+
+
+def find_key_from_table(hash_value, table, chain_length):
+    values = table.values()
+    if hash_value in values:
+        print("Found directly")
+        return list(table.keys())[list(table.values()).index(hash_value)]
+    for i in range(chain_length):
+        new_num = reduction_function(hash_value)
+        new_hash = sha1(str(new_num).encode('utf-8')).hexdigest()
+        if new_hash in values:
+            print("Found via chain")
+            return list(table.keys())[list(table.values()).index(new_hash)]
+    return None
+
+
+def reduction_function(hash_value):
+    return int(hash_value, 16) >> 134
+
+
 def test_signature(signature):
     bit_index = 2
     signature_valid = True
@@ -73,4 +153,4 @@ def test():
 
 
 if __name__ == '__main__':
-    run()
+    run2()
