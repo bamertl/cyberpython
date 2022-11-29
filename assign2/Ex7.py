@@ -1,13 +1,11 @@
 from hashlib import sha1
-import random
 from tqdm import tqdm
 import math
 import pickle
 
-x_ij = random.randint(0, 1 << 26)
-h = sha1(str(x_ij).encode('utf-8'))
-y_ij = h.hexdigest()
+""" The rainbow table is generated with generate_rainbow_table, with a chain_length >3 i begin to have collisions.."""
 
+chain_length = 3
 m_stern = 0b110
 
 y_10 = "5aecb2fa1442c2957ab07e9b30cfd0982b7c1dc4"
@@ -22,10 +20,12 @@ y = [y_10, y_11, y_20, y_21, y_30, y_31]
 
 def run():
     total_count = 1 << 26
-    table = [sha1(str(i).encode('utf-8')).hexdigest() for i in tqdm(range(total_count))]
+    table_loaded = load_saved_table()
+    # table = [sha1(str(i).encode('utf-8')).hexdigest() for i in tqdm(range(total_count))]
     x = []
     for item in y:
-        xi = table.index(item)
+        # xi = table.index(item)
+        xi = find_number_of_hash(item, table_loaded)
         x.append(xi)
 
     print("Found x: ", x)
@@ -46,22 +46,23 @@ def run():
 
 
 def create_rainbow_table():
-    total_count = 1 << 16
-    chain_length = 10
+    total_count = 1 << 26
+    hash_set = {""}
     table = {}
     in_chain_counter = 0
     for i in tqdm(range(total_count)):
-        found = True
+        found = False
         current_number = i
         hash_val = ""
         for chain_iteration in range(chain_length):
             hash_val = sha1(str(current_number).encode('utf-8')).hexdigest()
-            if hash_val in table.values():
+            if hash_val in hash_set:
                 in_chain_counter += 1
-                found = False
+                found = True
                 break
             current_number = reduction_function(hash_val)
-        if found:
+        if not found:
+            hash_set.add(hash_val)
             table[i] = hash_val
 
     print("In Chain", in_chain_counter)
@@ -82,22 +83,16 @@ def load_saved_table():
     return pickle.load(file)
 
 
-def run2():
-    table_loaded = load_saved_table()
-    print(table_loaded[1])
-    number = int(0b0100)
-    print("Number to find", number)
-    hash_value = sha1(str(number).encode('utf-8')).hexdigest()
-    print(hash_value)
-    start_point = find_key_from_table(hash_value, table_loaded, 10)
-    print("Start Point", start_point)
-    result = find_from_chain(start_point, hash_value, 10)
-    print("Result", result)
+def find_number_of_hash(hash_value, table_loaded):
+    start_point = find_key_from_table(hash_value, table_loaded)
+    result = find_from_chain(start_point, hash_value)
+    print("Found Number", result)
+    return result
 
 
-def find_from_chain(starting_point_number, hash_value, chain_length):
+def find_from_chain(starting_point_number, hash_value):
     current_number = starting_point_number
-    for i in range(chain_length +2):
+    for i in range(chain_length + 2):
         new_hash = sha1(str(current_number).encode('utf-8')).hexdigest()
         if new_hash == hash_value:
             return current_number
@@ -105,18 +100,29 @@ def find_from_chain(starting_point_number, hash_value, chain_length):
     return None
 
 
-def find_key_from_table(hash_value, table, chain_length):
+def find_key_from_table(hash_value, table):
+    print("Hash to find", hash_value)
     values = table.values()
+    new_hash = hash_value
     if hash_value in values:
         print("Found directly")
-        return list(table.keys())[list(table.values()).index(hash_value)]
+        return get_key_of_table(hash_value, table)
     for i in range(chain_length):
-        new_num = reduction_function(hash_value)
+        new_num = reduction_function(new_hash)
         new_hash = sha1(str(new_num).encode('utf-8')).hexdigest()
         if new_hash in values:
-            print("Found via chain")
-            return list(table.keys())[list(table.values()).index(new_hash)]
+            print("Found via chain after: " + str(i) + " iterations")
+            return get_key_of_table(new_hash, table)
     return None
+
+
+def get_key_of_table(hash_value, table):
+    result_key = None
+    for key, value in table.items():
+        if value == hash_value:
+            print("Found key", key)
+            result_key = key
+    return result_key
 
 
 def reduction_function(hash_value):
@@ -143,14 +149,15 @@ def test_signature(signature):
 
 
 def test():
-    bit_index = 2
-    for i in range(3):
-        if (1 << bit_index) & m_stern:
-            print("1")
-        else:
-            print("0")
-        bit_index -= 1
+    table = load_saved_table()
+    number = 20
+    hash_val = sha1(str(number).encode('utf-8')).hexdigest()
+    key = find_key_from_table(hash_val, table)
+    print("Found key", key)
+    result = find_from_chain(key, hash_val)
+    print("Result", result)
 
 
 if __name__ == '__main__':
-    run2()
+    create_rainbow_table()
+    run()
