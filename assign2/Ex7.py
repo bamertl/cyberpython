@@ -3,8 +3,12 @@ from tqdm import tqdm
 import math
 import pickle
 
-""" The rainbow table is generated with generate_rainbow_table, with a chain_length >3 i begin to have collisions.. Maybe this could be bettered with a better reduction function"""
-""" The exercice is then solved by running run()"""
+""" The rainbow table is generated with generate_rainbow_table, doing this for longer chain_lengths like 15 takes really long (20 minits), i guess something when checking for 
+collision could be done more efficient (this really takes long, because i have to retrieve a dictionary entry which is not a set). 
+I am saving the numbers of the chain in an inverted table, to check if the number really fits into a certain chain or is a collision.
+If you wanna test this quickly i would set the chain_length to 3 or so.
+The exercise is then run by running run()
+"""
 
 chain_length = 15
 m_stern = 0b110
@@ -21,6 +25,7 @@ y = [y_10, y_11, y_20, y_21, y_30, y_31]
 
 def run():
     table_loaded = load_saved_table()
+    print("Length of table: ", math.log2(len(table_loaded)))
     x = []
     for item in y:
         xi = find_number_of_hash(item, table_loaded)
@@ -31,7 +36,6 @@ def run():
     bit_index = 2
     signature = []
     for i in range(3):
-        xi = None
         if (1 << bit_index) & m_stern:
             xi = x[i * 2 + 1]
         else:
@@ -67,8 +71,7 @@ def create_rainbow_table():
         for chain_iteration in range(chain_length):
             hash_val = sha1(str(current_number).encode('utf-8')).hexdigest()
             if hash_val in hash_set:
-                numbers = table_inverted[hash_val]
-                if i in numbers:
+                if i in table_inverted[hash_val]:
                     in_chain_counter += 1
                     found = True
                     break
@@ -81,7 +84,7 @@ def create_rainbow_table():
 
     print("In Chain", in_chain_counter)
     print("Length dictionary", len(table))
-    print("Dictionary Size", math.log2(len(table)))
+    print("Dictionary Size log2", math.log2(len(table)))
     save_table(table)
     return table
 
@@ -113,7 +116,7 @@ def find_from_chain(starting_point_number, hash_value):
     current_number = starting_point_number
     for i in range(chain_length):
         new_hash = sha1(str(current_number).encode('utf-8')).hexdigest()
-        print("NEW HASH", new_hash)
+        # print("NEW HASH", new_hash)
         if new_hash == hash_value:
             return current_number
         current_number = reduction_function(new_hash)
@@ -141,8 +144,6 @@ def get_keys_of_table(hash_value, table):
     result_keys = []
     for key, value in table.items():
         if value == hash_value:
-            print("Found key", key)
-            print("Value: ", value)
             result_keys.append(key)
     return result_keys
 
@@ -181,6 +182,6 @@ def test():
 
 
 if __name__ == '__main__':
-    #table1 = load_saved_table()
-    #find_number_of_hash(y_31, table1)
-    create_rainbow_table()
+    # table1 = load_saved_table()
+    # find_number_of_hash(y_31, table1)
+    run()
