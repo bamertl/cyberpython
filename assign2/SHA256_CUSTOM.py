@@ -1,5 +1,5 @@
 import textwrap
-"""This Python module is an implementation of the SHA-256 algorithm.
+"""This Python module is an implementation of the SHA-256 algorithm. Altered by me for being able to do length extension attack
 From https://github.com/keanemind/Python-SHA-256"""
 
 K = [

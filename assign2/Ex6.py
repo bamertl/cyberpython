@@ -1,6 +1,6 @@
 import hashlib
 from hashlib import sha256
-from SHA256 import generate_hash
+from SHA256_CUSTOM import generate_hash
 
 goal = "c36147c1ecf97f01807fcb9807291346a698e97a2162b8ed4c51792c76f494db"
 test_secret = "1234567891"
