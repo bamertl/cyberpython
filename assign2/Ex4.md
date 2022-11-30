@@ -1,17 +1,30 @@
 # Excercise 4
 
 ## a)
-The issue with this algorithm is, that to calculate yn xn is only used to xor the last yn.
-This way, we can freely choose x1,...xn-1, and calculate all the steps. 
-(this can also be achieved by the attacker by sending him the m x1..,xn-1 to encrypt it.)
-We end up with y1 xor ..., xor E(k, yn-1) xor xn for the tag.
-All we have to do is now choose xn, so that it matches the original MAC Tag.
 
-Question, can we run the algorithm for a m'?
+We have given CFB_MAC_k(m) = h
+The issue with this MAC is, that the last message part xn is directly xor to the other parts.
+This means that: h xor xn of the original message equals to the whole chain before.
+And this means, that we can just xor our new xn' to that chain and have a valid mac again.
+
+so: h' = h xor xn xor xn'
+
 ### b)
-If we choose x1 = 0, E(k, y1) will also be E(k, IV), thous we can choose x2 so that it matches r and
-r = E(k, IV) xor E(k, IV) xor x2 and we know E(k, IV).
-This would also work for longer messages, we cann however set x1,...,xn-1 only to 0.
+Given: IV, E(k, IV) and r = MAC_k(m)
+y1 is E(k,IV) xor x1
+So if we set x1 = E(k,IV) xor IV we get y1 = IV 
+this means that y2 = E(k, IV) xor x2
+and because the block_size is 2 -> r = y1 xor y2  -> r = IV xor E(k, IV) xor x2
+Thus we can say that x2 = r xor E(k, IV) xor IV 
+
+This can also be applied to longer block sizes, however we will have to see if the block are even.
+For example block size 3:
+y1 = IV
+y2 = E(k,IV) xor E(k,IV) xor IV
+y3 = E(k, IV) xor x3
+r = IV xor IV xor E(k,IV) xor x3 <br>
+This means that for uneven block lengths we have to leave out the iv in the calculation for xn.
+
 
 
 
