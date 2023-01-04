@@ -1,3 +1,4 @@
+### Exercice 5
 a)
 
 It is not honest, the prover can return $\gamma = y_1^\beta \cdot g_1^r$ without ever knowing x.

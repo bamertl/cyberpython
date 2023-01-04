@@ -1,3 +1,4 @@
+### Exercise 6
 a)
 
 I would add a new root certificate on the client.
